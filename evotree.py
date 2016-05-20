@@ -8,23 +8,23 @@ except ImportError:
 start_time=time.time()
 
 class Node:
-	def __init__(self,i,j,v,a)
+	def __init__(self,i,j,v,a):#i:int,j:int,v:dict,a:range[0,1]
 	self.i=i
 	self.j=j
 	self.v=v
 	self.a=a
 
-class tree:
-	def __init__(self, f, commentstring="/ "or "\ "):        
-		self.f = csv.reader(f,delimiter='\t')
-		self.commentstring = commentstring
-	def next(self):
-		line = self.f.next()
-		while commentstring in line
-			line = self.f.next()
-		return line
-	def __iter__(self):
-		return self
+#class tree:
+#	def __init__(self, f, commentstring="/ "or "\ "):        
+#		self.f = csv.reader(f,delimiter='\t')
+#		self.commentstring = commentstring
+#	def next(self):
+#		line = self.f.next()
+#		while commentstring in line
+#			line = self.f.next()
+#		return line
+#	def __iter__(self):
+#		return self
 
 
 def tree2treelist():
@@ -56,6 +56,13 @@ def runcmd(cmd):
 def main():
 	treefile=args.treefile
 	generation=args.ganeration
+	tempfile.tempdir = args.tmpdir
+	for line in treefile:
+		if "/" not in line and :
+			tempfile.write(line)
+	for g,line in enumerate(tempfile):
+		if g<=genetation :
+			tempfile.write(line)
 	
 	
 	
@@ -74,6 +81,7 @@ def run():
 	parser.add_argument("treefile", metavar="treefile", type=argparse.FileType('rU'), #example_tree	
 											help="inputfile of the svolution tree, required")
 	parser,add_argument('-g','--generation',dest='generation',type=int,help="the numbre of generation plan to simulation")
+	parser.add_argument('-d', '--tmpdir', dest='tmpdir', default=os.path.join(os.environ['HOME'],'newtree'))
 	args = parser.parse_args()
 	main(args)
 

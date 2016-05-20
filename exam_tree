@@ -1,10 +1,7 @@
 									N
 						/					\
-					var(1);0.5			     		N1;0.5
+					var:1;0.5			     		N1;0.5
 				/			\ 			/			\		
-			var1(1),var2(1);0,3		var1(1);0.7	    N2;0.4			var4(0);0.5
+			var1:1,var2:1;0,3		var1(1);0.7	    N2;0.4			var4:0;0.5
 			/		\		/	\	/	\    			/		\
-var1(1),var2(1),var3(1);0.8	var1(1),var2(2);0.2   None	None	None   None		var4(0),var5(1);0.1	var4(0);0.9
-
-
-
+var1:1,var2:1,var3:1;0.8	var1:1,var2:2;0.2   None	None	None   None		var4:0,var5:1;0.1	var4:0;0.9
