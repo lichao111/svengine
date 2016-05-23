@@ -100,8 +100,8 @@ assert len(Nodelist)==2**(generation+1)-1,	'the number of Node should equal to 2
 #for i in range(15):
 #	print Nodelist[i].i,Nodelist[i].j,Nodelist[i].v,Nodelist[i].a	
 #print N32.v,N21.v,N32.a		
-print get_name(Node(0,0,{'Normal':None},1))
-print locals()['N00']	==	Node(0,0,{'Normal':None},1)
+print get_name(Node(0,0,{'Normal':None},1))#
+print locals()['N00']	==	Node(0,0,{'Normal':None},1)#why False
 print locals()
 #Nodelist1=[]
 #print N11.i,N11.j,N11.v,N11.a				
