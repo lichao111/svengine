@@ -23,7 +23,11 @@ class Node:
 def P(Node):	#find Node's parent
 	i=Node.i-1
 	j=Node.j/2
-	return locals()['N'+str(i)+str(j)]
+	return globals()['N'+str(i)+str(j)]
+def anchor(Node,n):	#find Node's anchor
+	for i in range(n):
+		Node=P(Node)
+	return Node
 
 def C(Node):	#find Node's children
 	i=Node.i+1
@@ -31,13 +35,17 @@ def C(Node):	#find Node's children
 	j2=Node.j+2	
 	return [locals()['N'+str(i)+str(j1)],locals()['N'+str(i)+str(j2)]]
 
-def get_name(Node):
-	d=locals()
+def d(j):	#the depth of j brunch, generation minu the number of None in this brunch
+	if locals()['N'+str(g/2)+str(j)
+
+def get_idname(d,Node):	#d=locals(),but not here
 	for key in d:
 		if d[key]==Node:
 			return key
+		
 	
-Nodelist=[]
+Nodelist=[]	#store all Node class
+id_Nodelist=[]	#store all Node id, for example N00,N10...
 with open('/home/lichao/Documents/github/svengine/exam_tree') as treefile:
 #	treefile=file
 
@@ -57,14 +65,14 @@ with open('/home/lichao/Documents/github/svengine/exam_tree') as treefile:
 					print line	
 					assert  line==['N'],	"the tree should use N as root Node"
 					locals()['N'+'0'+'0']=Node(0,0,{'Normal':None},1)
-					Nodelist.append(N00)
+					Nodelist.append(Node(0,0,{'Normal':None},1))
 				else:
 					for j in range(l) :		
 						
 						if line[j]=='None':	#check the 'None' condition
 							#print line[j],type(line[j])							
 							locals()['N'+str(g/2)+str(j)]=Node(g/2,j,locals()['N'+str(g/2-1)+str(int(j/2))].v,0.5)
-							Nodelist.append(get_name(Node(g/2,j,locals()['N'+str(g/2-1)+str(int(j/2))].v,0.5)))
+							Nodelist.append(Node(g/2,j,locals()['N'+str(g/2-1)+str(int(j/2))].v,0.5))
 						else:
 						
 							
@@ -82,7 +90,7 @@ with open('/home/lichao/Documents/github/svengine/exam_tree') as treefile:
 							if var[0][0]=='N' and var[0][1].isdigit() :
 								assert len(var)==1,	"Normal Node only have one type 'N'"	
 								locals()['N'+str(g/2)+str(j)]=Node(g/2,j,{'Normal':None},freq)	
-								Nodelist.append(get_name(Node(g/2,j,{'Normal':None},freq)))
+								Nodelist.append(Node(g/2,j,{'Normal':None},freq))
 							else:
 		
 	#						line[j]=line[j].split(';')
@@ -92,17 +100,31 @@ with open('/home/lichao/Documents/github/svengine/exam_tree') as treefile:
 							#print varlist
 								map(lambda x:varlist.setdefault(x.split(':')[0], int(x.split(':')[1])), var)
 								locals()['N'+str(g/2)+str(j)]=Node(g/2,j,varlist,freq)
-								Nodelist.append(get_name(Node(g/2,j,varlist,freq)))
+								Nodelist.append(Node(g/2,j,varlist,freq))
 					#if line[j].startwith('N'):
 					#	locals()['N'+g/2+j]=Node(g/2,j,varlist,freq)
-print Nodelist,	'this the all Node!'
+#print Nodelist,	'this the all Node!'
 assert len(Nodelist)==2**(generation+1)-1,	'the number of Node should equal to 2**(generation+1)-1, the treefile may include error.'	
 #for i in range(15):
 #	print Nodelist[i].i,Nodelist[i].j,Nodelist[i].v,Nodelist[i].a	
-#print N32.v,N21.v,N32.a		
-print get_name(Node(0,0,{'Normal':None},1))#
-print locals()['N00']	==	Node(0,0,{'Normal':None},1)#why False
-print locals()
+#print N32.v,N21.v,N32.a
+#print locals()		
+#print get_name(Node(0,0,{'Normal':None},1)),get_name(N00)#
+
+#print Node(0,0,{'Normal':None},1),N00	#why False
+#print locals()['N00'] is Node(0,0,{'Normal':None},1)
+#print id(N00),'\t',id( Node(0,0,{'Normal':None},1))
+#print N00==Node(0,0,{'Normal':None},1)
+for i in range(4):
+	for j in range(2**i):
+		id_Nodelist.append(get_idname(locals(),locals()['N'+str(i)+str(j)]))
+print id_Nodelist
+print locals(),'\n',globals()
+print locals()['N'+str(g/2)+'1']
+#print get_idname(locals(),anchor(P(locals()['N'+str(g/2)+'1'],3)
+print anchor(locals()['N'+str(g/2)+'1'],3)
+#print id_Nodelist[1].a
+
 #Nodelist1=[]
 #print N11.i,N11.j,N11.v,N11.a				
 #for g in range(generation+1):
