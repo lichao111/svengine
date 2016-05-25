@@ -35,10 +35,24 @@ def C(Node):	#find Node's children
 	j2=Node.j+2	
 	return [locals()['N'+str(i)+str(j1)],locals()['N'+str(i)+str(j2)]]
 
-def d(j):	#the depth of j brunch, generation minu the number of None in this brunch
-	if locals()['N'+str(g/2)+str(j)
+def depth(j):	#the depth of j brunch, generation minu the number of None in this brunch
+	assert j in range(2**generation),	'%d  brunch in all' %(2**generation)	
+#	print Nonelist	
+	i=generation
+	depth=generation
+#	for l in Nonelist:
+#		if  not in l[1]:
+#			return generation/2
+#		else:
+			
+	while [i,j] in Nonelist:
+#		print [i,j]
+		i=i-1
+		j=int(j/2)
+		depth=depth-1
+	return depth		
 
-def get_idname(d,Node):	#d=locals(),but not here
+def get_idname (d,Node):	#d=locals(),but not here
 	for key in d:
 		if d[key]==Node:
 			return key
@@ -46,6 +60,8 @@ def get_idname(d,Node):	#d=locals(),but not here
 	
 Nodelist=[]	#store all Node class
 id_Nodelist=[]	#store all Node id, for example N00,N10...
+Nonelist=[]	#store the 'None' Node
+varlist=[]	#store all kinds of var name
 with open('/home/lichao/Documents/github/svengine/exam_tree') as treefile:
 #	treefile=file
 
@@ -71,6 +87,8 @@ with open('/home/lichao/Documents/github/svengine/exam_tree') as treefile:
 						
 						if line[j]=='None':	#check the 'None' condition
 							#print line[j],type(line[j])							
+							Nonelist.append([g/2,j])
+#							print Nonelist							
 							locals()['N'+str(g/2)+str(j)]=Node(g/2,j,locals()['N'+str(g/2-1)+str(int(j/2))].v,0.5)
 							Nodelist.append(Node(g/2,j,locals()['N'+str(g/2-1)+str(int(j/2))].v,0.5))
 						else:
@@ -105,6 +123,9 @@ with open('/home/lichao/Documents/github/svengine/exam_tree') as treefile:
 					#	locals()['N'+g/2+j]=Node(g/2,j,varlist,freq)
 #print Nodelist,	'this the all Node!'
 assert len(Nodelist)==2**(generation+1)-1,	'the number of Node should equal to 2**(generation+1)-1, the treefile may include error.'	
+varlist=[]
+for i in range(2**generation):
+	locals()['N'+str(generation)+str(i)].v
 #for i in range(15):
 #	print Nodelist[i].i,Nodelist[i].j,Nodelist[i].v,Nodelist[i].a	
 #print N32.v,N21.v,N32.a
@@ -115,14 +136,52 @@ assert len(Nodelist)==2**(generation+1)-1,	'the number of Node should equal to 2
 #print locals()['N00'] is Node(0,0,{'Normal':None},1)
 #print id(N00),'\t',id( Node(0,0,{'Normal':None},1))
 #print N00==Node(0,0,{'Normal':None},1)
-for i in range(4):
+for i in range(generation+1):
 	for j in range(2**i):
 		id_Nodelist.append(get_idname(locals(),locals()['N'+str(i)+str(j)]))
 print id_Nodelist
-print locals(),'\n',globals()
-print locals()['N'+str(g/2)+'1']
+#print locals(),'\n',globals()
+#print locals()['N'+str(g/2)+'1']
 #print get_idname(locals(),anchor(P(locals()['N'+str(g/2)+'1'],3)
-print anchor(locals()['N'+str(g/2)+'1'],3)
+#print anchor(locals()['N'+str(g/2)+'1'],3)
+for i in range(2**generation):
+	print depth(i)
+
+def freq(vari):		#calculte the allel freq
+	cell_all=0	#the number of all cell
+	cell_vari=0	#the number of cell inculde vari: if the vari is heterozygote,the number be half
+	count_brunch=[]	#the number of cell each brunch
+	brunch_vari=[]	#the brunch id which include vari 
+	for i in range(2**generation):
+		a=1
+		for j in range (generation):
+			
+			a=a*(anchor(globals()['N'+str(generation)+str(i)],j).a)
+#			print a
+		
+		count_brunch.append(2**(depth(i))*a)
+		cell_all =round(sum(count_brunch),2)
+	haplist=[]
+	for i in range(2**generation):
+		if vari in globals()['N'+str(generation)+str(i)].v.keys():
+			haplist.append(globals()['N'+str(generation)+str(i)].v[vari])
+			brunch_vari.append(i)
+	if haplist.count(haplist[0])!=len(haplist):	
+		print "Warning! The haplotype of each var must keep unchange,you better check your %s  "	%vari
+	hap=haplist[0]
+	assert hap in [0,1],	"the haplotype must 1(homozygote) or 0(heterozygote)"
+	for j in brunch_vari:
+		cell_vari=(cell_vari+count_brunch[j])*(float(hap+1)/2)	#0-->0.5,1-->1
+							
+								
+	return cell_vari,cell_all,round(cell_vari/cell_all,2)				
+		
+print freq('var1')#,freq('var2'),freq('var3'),freq('var4'),freq('var5')
+	
+	
+	
+	
+
 #print id_Nodelist[1].a
 
 #Nodelist1=[]
