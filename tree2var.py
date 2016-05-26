@@ -1,14 +1,11 @@
 #!user/bin/env python
+import argparse,time,subprocess,csv,tempfile
 
-import tempfile,os,string
-
-generation=3 #add a warning not let genaration bigger than real generation
-
-#tree1=open('/home/lichao/Documents/github/svengine/tree1','w+b')
-#for G,line in enumerate(o):
-#	print G,line
-#home=tempfile.TempFile()
-#print 
+#try:
+#	import mf.mutforge as mf
+#except ImportError:
+#	import mutforge as mf
+start_time=time.time()
 
 class Node:
 	def __init__(self,i,j,v,a):#i:int,j:int,v:dict,a:range[0,1]
@@ -17,23 +14,36 @@ class Node:
 		self.v=v
 		self.a=float(a)
 
-#treefile=file('/home/lichao/Documents/github/svengine/exam_tree')
-#def trefil2varfile()
+#class tree:
+#	def __init__(self, f, commentstring="/ "or "\ "):        
+#		self.f = csv.reader(f,delimiter='\t')
+#		self.commentstring = commentstring
+#	def next(self):
+#		line = self.f.next()
+#		while commentstring in line
+#			line = self.f.next()
+#		return line
+#	def __iter__(self):
+#		return self
+
+
+#def tree2treelist():
+
+def C(Node):
+	i=Node.i+1
+	j1=2*(Node.j)
+	j2=j1+1
+	return {Node(i,j1),Node(i,j2)}
 
 def P(Node):	#find Node's parent
 	i=Node.i-1
 	j=Node.j/2
 	return globals()['N'+str(i)+str(j)]
+
 def anchor(Node,n):	#find Node's anchor
 	for i in range(n):
 		Node=P(Node)
 	return Node
-
-def C(Node):	#find Node's children
-	i=Node.i+1
-	j1=Node.j+1
-	j2=Node.j+2	
-	return [locals()['N'+str(i)+str(j1)],locals()['N'+str(i)+str(j2)]]
 
 def depth(j):	#the depth of j brunch, generation minu the number of None in this brunch
 	assert j in range(2**generation),	'%d  brunch in all' %(2**generation)	
@@ -43,33 +53,49 @@ def depth(j):	#the depth of j brunch, generation minu the number of None in this
 #	for l in Nonelist:
 #		if  not in l[1]:
 #			return generation/2
-#		else:
-			
+#		else:			
 	while [i,j] in Nonelist:
 #		print [i,j]
 		i=i-1
 		j=int(j/2)
 		depth=depth-1
-	return depth		
-
+	return depth	
+	
 def get_idname (d,Node):	#d=locals(),but not here
 	for key in d:
 		if d[key]==Node:
 			return key
-		
+			
+def runcmd(cmd):   
+	#print >>sys.stderr, cmd
+	run=subprocess.Popen(cmd.split(),env=os.environ,cwd=os.getcwd(),stderr=subprocess.PIPE,stdout=subprocess.PIPE)
+	run_info=run.communicate() 
+	return run_info
 	
-Nodelist=[]	#store all Node class
-id_Nodelist=[]	#store all Node id, for example N00,N10...
-Nonelist=[]	#store the 'None' Node
-VAR=[]	#store all kinds of var name
-with open('/home/lichao/Documents/github/svengine/exam_tree') as treefile:
+
+
+
+
+
+
+def main(args):
+	treefile=args.treefile
+	globals()['generation']=args.generation
+	oprefix=args.oprefix
+			
+		
+	Nodelist=[]	#store all Node class
+	id_Nodelist=[]	#store all Node id, for example N00,N10...
+	globals()['Nonelist']=[]	#store the 'None' Node
+	VAR=[]		#store all kinds of var name
+#	with open('/home/lichao/Documents/github/svengine/exam_tree') as treefile:
 #	treefile=file
 
 #	with open('/home/lichao/Documents/github/svengine/tree1','w+') as tree1:
 #tree1=open('/home/lichao/Documents/github/svengine/tree1','w+')
 #tree1=tempfile.TemporaryFile()
 #tree1=open('tree1','w+')
-		for g,line in enumerate(treefile):
+	for g,line in enumerate(treefile):
 			if '/' not in line and g<=2*generation:
 				#tree1.write(line)
 				line=line.expandtabs().strip().split(' ')
@@ -80,7 +106,7 @@ with open('/home/lichao/Documents/github/svengine/exam_tree') as treefile:
 				if g==0:# the root node
 					print line	
 					assert  line==['N'],	"the tree should use N as root Node"
-					locals()['N'+'0'+'0']=Node(0,0,{'Normal':None},1)
+					globals()['N'+'0'+'0']=Node(0,0,{'Normal':None},1)
 					Nodelist.append(Node(0,0,{'Normal':None},1))
 				else:
 					for j in range(l) :		
@@ -89,8 +115,8 @@ with open('/home/lichao/Documents/github/svengine/exam_tree') as treefile:
 							#print line[j],type(line[j])							
 							Nonelist.append([g/2,j])
 #							print Nonelist							
-							locals()['N'+str(g/2)+str(j)]=Node(g/2,j,locals()['N'+str(g/2-1)+str(int(j/2))].v,0.5)
-							Nodelist.append(Node(g/2,j,locals()['N'+str(g/2-1)+str(int(j/2))].v,0.5))
+							globals()['N'+str(g/2)+str(j)]=Node(g/2,j,globals()['N'+str(g/2-1)+str(int(j/2))].v,0.5)
+							Nodelist.append(Node(g/2,j,globals()['N'+str(g/2-1)+str(int(j/2))].v,0.5))
 						else:
 						
 							
@@ -107,7 +133,7 @@ with open('/home/lichao/Documents/github/svengine/exam_tree') as treefile:
 						
 							if var[0][0]=='N' and var[0][1].isdigit() :
 								assert len(var)==1,	"Normal Node only have one type 'N'"	
-								locals()['N'+str(g/2)+str(j)]=Node(g/2,j,{'Normal':None},freq)	
+								globals()['N'+str(g/2)+str(j)]=Node(g/2,j,{'Normal':None},freq)	
 								Nodelist.append(Node(g/2,j,{'Normal':None},freq))
 							else:
 								for i in range(len(var)):
@@ -122,35 +148,11 @@ with open('/home/lichao/Documents/github/svengine/exam_tree') as treefile:
 								
 								map(lambda x:varlist.setdefault(x.split(':')[0], int(x.split(':')[1])), var)
 						
-								locals()['N'+str(g/2)+str(j)]=Node(g/2,j,varlist,freq)
+								globals()['N'+str(g/2)+str(j)]=Node(g/2,j,varlist,freq)
 								Nodelist.append(Node(g/2,j,varlist,freq))
-					#if line[j].startwith('N'):
-					#	locals()['N'+g/2+j]=Node(g/2,j,varlist,freq)
-#print Nodelist,	'this the all Node!'
-assert len(Nodelist)==2**(generation+1)-1,	'the number of Node should equal to 2**(generation+1)-1, the treefile may include error.'	
-print VAR
-#for i in range(2**generation):
-#	print locals()['N'+str(generation)+str(i)].v
-#for i in range(15):
-#	print Nodelist[i].i,Nodelist[i].j,Nodelist[i].v,Nodelist[i].a	
-#print N32.v,N21.v,N32.a
-#print locals()		
-#print get_name(Node(0,0,{'Normal':None},1)),get_name(N00)#
+	assert len(Nodelist)==2**(generation+1)-1,	'the number of Node should equal to 2**(generation+1)-1, the treefile may include error.'	
+	print VAR_frq(VAR)	
 
-#print Node(0,0,{'Normal':None},1),N00	#why False
-#print locals()['N00'] is Node(0,0,{'Normal':None},1)
-#print id(N00),'\t',id( Node(0,0,{'Normal':None},1))
-#print N00==Node(0,0,{'Normal':None},1)
-for i in range(generation+1):
-	for j in range(2**i):
-		id_Nodelist.append(get_idname(locals(),locals()['N'+str(i)+str(j)]))
-print id_Nodelist
-#print locals(),'\n',globals()
-#print locals()['N'+str(g/2)+'1']
-#print get_idname(locals(),anchor(P(locals()['N'+str(g/2)+'1'],3)
-#print anchor(locals()['N'+str(g/2)+'1'],3)
-for i in range(2**generation):
-	print depth(i)
 
 def freq(vari):		#calculte the allel freq
 	cell_all=0	#the number of all cell
@@ -187,60 +189,30 @@ def VAR_frq(VAR):
 	for var in VAR:
 		VAR_frq[var.split(':')[0]]=freq(var.split(':')[0])	
 	return VAR_frq
-print VAR_frq(VAR)	
-	
-
-#print id_Nodelist[1].a
-
-#Nodelist1=[]
-#print N11.i,N11.j,N11.v,N11.a				
-#for g in range(generation+1):
-#	for j in range(2**g):
-#		Nodelist1.append(locals()['N'+str(g)+str(j)])
-#print [N00,N10,N11]
-#print ''
-#for line in tree1:
-#				print g/2,line  #g/2 because '/' was remove
-#quit()
-#		with open('/home/lichao/Documents/github/svengine/tree2','w+') as tree2:
-#			for g,line in enumerate(tree1):
-#				print g,line
-#				if g<=generation :
-#					tree2.write(line)
-#
-#	quit()
-	#tree2=open('/home/lichao/Documents/github/svengine/tree2')
 
 
-#A00=Node(0,0,{'var1':1},0.5)
-#print A00,A00.i,A00.j,A00.v,A00.a,type(A00.v)	
-			#for g,line in enumerate(tree2):
-	#line=line.expandtabs().strip().split(' ')
-	#string.translate(line, del=" ")
-	#line=line.strip().split(' ')
-	#line=line.split(' ')
-	
-#	while '' in line:
-#		line.remove('')
-#	l=len(line)
-#	for j in range(l):
-#		line[j]=line[j].split(';')
-#		varlist=line[j][0]
-#		print varlist
-#		a={}
-	#	map(lambda x:a.setdefault(x.split(':')[0], x.split(':')[1]), varlist)
-	#	if line[j].startwith('N'):
-	#		locals()['N'+g+j]=	
-		
-	
-		
-	#print line	
-		#if :
-			
-	#print line,l
-#for g,line in enumerate(tree2):
-#	print g,line
-#for line in tree1:
-#	print line	
-	
-#tree1.close()
+
+
+
+
+
+
+
+
+def run():
+	parser = argparse.ArgumentParser(description="translate a binary tree to varfile can be accepted by fasforge and muteforge.")
+	parser.add_argument("treefile", metavar="treefile", type=argparse.FileType('rU'), #example_tree	
+											help="inputfile of the svolution tree, required")
+	parser.add_argument('-g','--generation',dest='generation',type=int,help="the numbre of generation plan to simulation,required")
+	parser.add_argument('-o', '--oprefix', dest='oprefix', default=None, #output1,output2,output3,...
+												help="prefix for output files")
+	args = parser.parse_args()
+	main(args)
+
+
+if __name__ == '__main__':
+	run()
+	print "tree2var have done! Total runtime: ", time.time()-start_time, " seconds"
+
+
+
