@@ -1,2 +1,2 @@
-# svengine
-a sv simulator
+# SVEngine
+SVEngine is a sv simulator
