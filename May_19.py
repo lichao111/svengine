@@ -35,7 +35,7 @@ def C(Node):	#find Node's children
 	j2=Node.j+2	
 	return [locals()['N'+str(i)+str(j1)],locals()['N'+str(i)+str(j2)]]
 
-def depth(j):	#the depth of j brunch, generation minu the number of None in this brunch
+def depth(j,generation):	#the depth of j brunch, generation minu the number of None in this brunch
 	assert j in range(2**generation),	'%d  brunch in all' %(2**generation)	
 #	print Nonelist	
 	i=generation
@@ -150,9 +150,9 @@ print id_Nodelist
 #print get_idname(locals(),anchor(P(locals()['N'+str(g/2)+'1'],3)
 #print anchor(locals()['N'+str(g/2)+'1'],3)
 for i in range(2**generation):
-	print depth(i)
+	print depth(i,generation)
 
-def freq(vari):		#calculte the allel freq
+def freq(vari,generation):		#calculte the allel freq
 	cell_all=0	#the number of all cell
 	cell_vari=0	#the number of cell inculde vari: if the vari is heterozygote,the number be half
 	count_brunch=[]	#the number of cell each brunch
@@ -164,8 +164,9 @@ def freq(vari):		#calculte the allel freq
 			a=a*(anchor(globals()['N'+str(generation)+str(i)],j).a)
 #			print a
 		
-		count_brunch.append(2**(depth(i))*a)
-		cell_all =round(sum(count_brunch),2)
+		count_brunch.append(2**(depth(i,generation))*a)
+#	print count_brunch	
+	cell_all =round(sum(count_brunch),2)
 	haplist=[]
 	for i in range(2**generation):
 		if vari in globals()['N'+str(generation)+str(i)].v.keys():
@@ -176,18 +177,18 @@ def freq(vari):		#calculte the allel freq
 	hap=haplist[0]
 	assert hap in [0,1],	"the haplotype must 1(homozygote) or 0(heterozygote)"
 	for j in brunch_vari:
-		cell_vari=round((cell_vari+count_brunch[j])*(float(hap+1)/2),2)	#0-->0.5,1-->1
-							
+		cell_vari=(cell_vari+count_brunch[j])	#0-->0.5,1-->1
+	cell_vari=round(cell_vari*(float(hap+1)/2),2)
 								
 	return cell_vari,cell_all,round(cell_vari/cell_all,2)				
 		
 #print freq('var1')#,freq('var2'),freq('var3'),freq('var4'),freq('var5')
-def VAR_frq(VAR):
+def VAR_frq(VAR,generation):
 	VAR_frq={}
 	for var in VAR:
-		VAR_frq[var.split(':')[0]]=freq(var.split(':')[0])	
+		VAR_frq[var.split(':')[0]]=freq(var.split(':')[0],generation)	
 	return VAR_frq
-print VAR_frq(VAR)	
+print VAR_frq(VAR,generation)	
 	
 
 #print id_Nodelist[1].a
