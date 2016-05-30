@@ -5,3 +5,8 @@
 			var1:1,var2:1;0.3		var1:1;0.7	    N2;0.4			var4:0;0.6
 			/		\		/	\	/	\    			/		\
 var1:1,var2:1,var3:1;0.8	var1:1,var2:1;0.2   None	None	None   None		var4:0,var5:1;0.1	var4:0;0.9
+/              \                   /   \            /\          /\       /\    /\                   /\                    /\
+var1:1,var2:1,var3:1;0.2  var1:1,var2:1,var3:1,var6:0;0.8   var1:1,var2:1;0.5  var1:1,var2:1,var7:1;0.5  None None None None None None None None   var4:0,var5:1;0.7  var4:0,var5:1,var8:1;0.3     None None
+/
+None None None None None None None None None None None None None None None None None None None None None None None None None None None None None None None None
+
