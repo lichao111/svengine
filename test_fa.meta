@@ -1,0 +1,19 @@
+#testing meta table
+#DONORDIST 0, 1, 2, 3, ..., 2^nploid-1; this is basically deletion or nothing
+#RECPTDIST 0, 1, 2, 3, ..., 2^nploid-1; this is basically insertion or nothing
+#IF DONOR is multiple and is providing sequence, a random one among them is chosen 
+#IF RECPT is multiple and every in the multiple is receiving the chosen donor seq
+#FOR HOMOZYGOUS EVENTS TO HAPPEN at nploid=2: 
+#DONOR must be fix_3, RECPT must be fix_3
+#And Sequence Content Should be the same for any donor sequence
+#FOR HEMIZYGOUS EVENTS TO HAPPEN at nploid=2: 
+#DONOR must be fix_1/fix_2, RECPT must be fix_1/fix_2
+#And Sequence Content Should be the same for any donor sequence
+#FOR FASFORGE:
+#DONOR, RECPT, DONORFREQ, RECPTFREQ are not effective 
+#their values shall always be fix_1, which are just place holders
+#METATYPE	EVENT	SIZEDIST/SEQ	COPYDIST	DONORDIST	RECPTDIST		NOTE
+FINS	var1	fix_1000	fix_1	fix_1	fix_1	#FINS=COPY*INS, foreign insertion
+ITRA	var2	fix_800	fix_1	fix_1	fix_1	#ITRA=1*DEL + COPY * INS, inverted transposition
+DEL	var3	fix_1000	fix_1	fix_1	fix_1	#DEL=1*DEL, deletion
+TRA	var4,var5	fix_500_1000	fix_1	fix_1	fix_1	#TRA=1*DEL + COPY*INS, transposition
