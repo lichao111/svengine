@@ -194,6 +194,7 @@ def main(args):
 	parlist.readfp(parfile)
 	metafile = args.metafile
 	varfile = args.varfile
+	targetfile = args.targetfile
 	#if varfile != None: print varfile.name.rstrip("var").rstrip(".") #weird behavior of rstrip(".meta") -> exampl
 	#if metafile != None: print metafile.name.rstrip("meta").rstrip(".")
 	oname = metafile.name.rstrip("meta").rstrip(".") if metafile != None else varfile.name.rstrip(".var").rstrip(".")
@@ -212,6 +213,11 @@ def main(args):
 		sizefile = fas2size(hapseq[0].filename)		 #require hap file to be the same size and gap applies to all
 		#FIXME: this sizefile has also to be hapseq dependent 
 		gaptab=pybedtools.BedTool(gapfile.read(),from_string=True)
+		#------------------add for targetfile---------------		
+		if targetfile != None:
+			targfile=pybedtools.BedTool(targetfile.read(),from_string=True)
+			targtab=targfile.complement(g=sizefile)
+			gaptab=targtab.cat(gaptab.each(pybedtools.featurefuncs.extend_fields,n=targtab.field_count()).saveas())
 		gaptab=gaptab.flank(g=sizefile, b=edgein)							#need to merge
 	except pybedtools.cbedtools.BedToolsFileError:
 		raise Exception("incorrect gapfile provided, must in BED format")
@@ -589,16 +595,18 @@ def fakefq(hapit): # makebam from a pair of seqs of representing the original an
 	print >>sys.stderr, "processed %d out of %d regions" % (hapit[6],hapit[7])
 	return [hap,fqs]
 
-def fqwgs(parlist,nligation,reffile,nploid,seq,lib,freq,mergemax): #create bam file for 1 library given seq and freq
+def fqwgs(parlist,nligation,reffile,nploid,seq,lib,freq,mergemax,tar_len): #create bam file for 1 library given seq and freq
 	#passing both filename and contents to save space
 	tmpfa=False #fa is temporary created or constant
 	if(type(seq)==type({})):
-		fa=seq['filename']; seqs=seq['seq'] #for fasforge calls
+		fa=seq['filename']
+		seqs=seq['seq'] #for fasforge calls
+		
 	else:
 		fa=myTemporaryFile(prefix="fawgs_") #this has to be removed
 		tmpfa=True
 		seqs=seq
-	seql = sum( [ len(s) for s in seqs ] ) #len of all seqs
+	seql = sum( [len(s) for s in seqs] ) - tar_len #len of all seqs
 	libnames=json.loads(parlist.get('xwgsim', 'libnames'))
 	coverage=json.loads(parlist.get('xwgsim', 'coverage'))
 	isize=json.loads(parlist.get('xwgsim', 'isize'))
@@ -1363,6 +1371,7 @@ def run():
 												help="max number of bamfiles in one iteration of samtool merging (default: %(default)s )")
 	parser.add_argument('-d', '--tmpdir', dest='tmpdir', default=os.path.join(os.environ['HOME'],'svetmp_'+''.join([random.choice(string.ascii_letters) for i in range(4)])),
 												help="root dir for keeping temporary files, default (last 4 digits random): %(default)s")
+	parser.add_argument('-t','--targetfile',dest='targetfile',type=argparse.FileType('rU'),default=None, help='inputfile of target region, for example Exome region, in bed format')											
 	parser.add_argument('--layout', action='store_true', dest='layout', default=False, help="dry run to layout")
 	parser.add_argument('--outbam', action='store_true', dest='outbam', default=False, help="wet run to bam")
 	args = parser.parse_args()
