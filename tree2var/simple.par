@@ -1,0 +1,13 @@
+[xwgsim]
+#number of libraries
+#haplotype option should be always set on wgsim
+#please use json+configureparser for parsing this file
+nlibrary=1
+#library-wise option=optbam"lib1":optbam2
+libnames=["lib1"]
+coverage: {"lib1":5}
+# for the tuple in isize, [mode_weight, mode_mean, mode_sd]
+isize: {"lib1":[[1,300,5]]}
+read1: {"lib1":100}
+read2: {"lib1":100}
+par: {"-e":0.01,"-r":0,"-R":0,"-X":0}
