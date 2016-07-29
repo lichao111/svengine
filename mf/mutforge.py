@@ -155,6 +155,7 @@ def main(args):
 	edgein = args.edgein
 	mergemax = args.mergemax
 	tempfile.tempdir = args.tmpdir
+	tar_len=0
 	try:
 		os.mkdir(tempfile.tempdir)
 	except:
@@ -218,12 +219,17 @@ def main(args):
 			targfile=pybedtools.BedTool(targetfile.read(),from_string=True)
 			targtab=targfile.complement(g=sizefile)
 			gaptab=targtab.cat(gaptab.each(pybedtools.featurefuncs.extend_fields,n=targtab.field_count()).saveas())
-		gaptab=gaptab.flank(g=sizefile, b=edgein)							#need to merge
+		gaptab=gaptab.flank(g=sizefile, b=edgein)
+		#print gaptab.count()
+		for i in xrange(gaptab.count()):
+		#	print gaptab[i].start
+			tar_len += gaptab[i].end-gaptab[i].start
+		#print tar_len							#need to merge
 	except pybedtools.cbedtools.BedToolsFileError:
 		raise Exception("incorrect gapfile provided, must in BED format")
 
 	dic={} #common dictionary interface for passing parameters
-	for i in ('hapseq','gaptab','reffile','plansize','nligation','nploid','oprefix','nprocs','edgein','burnin','mergemax'):
+	for i in ('hapseq','gaptab','reffile','plansize','nligation','nploid','oprefix','nprocs','edgein','burnin','mergemax','tar_len'):
 		dic[i] = locals()[i]
 
 	print >>sys.stderr, "entering runmode", runmode
@@ -458,6 +464,7 @@ def var2fq(bun):
 	reffile = bun.reffile.name
 	parlist = bun.parlist
 	mergemax = bun.mergemax
+	tar_len=bun.tar_len
 	#parfile in python ConfigParser format
 	#LibraryNumber = 3
 	#Have to use very complex merging
@@ -496,7 +503,7 @@ def var2fq(bun):
 	for hap in hapvar.keys():
 		hapfas=bun.hapseq[hap].filename
 		for feat in hapvar[hap]:
-			hapiter.append([hap,hapfas,nligation,parlist,reffile,nploid,idx,total,feat,mergemax])
+			hapiter.append([hap,hapfas,nligation,parlist,reffile,nploid,idx,total,feat,mergemax,tar_len])
 			idx += 1
 	#for it in hapiter:
 	#	print it
@@ -533,7 +540,7 @@ def var2fq(bun):
 
 
 def fakefq(hapit): # makebam from a pair of seqs of representing the original and sved haplotype
-	hap=hapit[0]; hapfas=hapit[1]; nligation=hapit[2]; parlist=hapit[3]; reffile=hapit[4]; nploid=hapit[5]; bed=hapit[8]; mergemax=hapit[9]
+	hap=hapit[0]; hapfas=hapit[1]; nligation=hapit[2]; parlist=hapit[3]; reffile=hapit[4]; nploid=hapit[5]; bed=hapit[8]; mergemax=hapit[9];tar_len=hapit[10]
 	#print >>sys.stderr, "processing %d out of %d regions" % (hapit[6],hapit[7])
 	#print >>sys.stderr, "bed=", bed
 	tmpfas=pysam.Fastafile(hapfas)
@@ -575,14 +582,14 @@ def fakefq(hapit): # makebam from a pair of seqs of representing the original an
 		if empty0:
 			wgs0 = [None, None]
 		else:
-			wgs0 = fqwgs(parlist,nligation,reffile,nploid,[seq0],lib,freq0,mergemax)
+			wgs0 = fqwgs(parlist,nligation,reffile,nploid,[seq0],lib,freq0,mergemax,tar_len)
 		#print seq1.seq
 		if not goodseq(seq1.seq, nligation, rl): empty1=True #FIXME, these N regions has to be masked from input
 		#print goodseq(seq1.seq, nligation, rl)
 		if empty1:
 			wgs1 = [None, None]
 		else:
-			wgs1 = fqwgs(parlist,nligation,reffile,nploid,[seq1],lib,freq,mergemax)
+			wgs1 = fqwgs(parlist,nligation,reffile,nploid,[seq1],lib,freq,mergemax,tar_len)
 		fqopre = myTemporaryFile(prefix="fakefq_")
 		#only need the temporary filename here
 		#print "wgs=",wgs0,wgs1

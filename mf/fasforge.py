@@ -194,7 +194,7 @@ def main(args):
 			targtab=targfile.complement(g=sizefile)
 			gaptab=targtab.cat(gaptab.each(pybedtools.featurefuncs.extend_fields,n=targtab.field_count()).saveas())
 		gaptab=gaptab.slop(g=sizefile, b=edgein)
-		print gaptab.count()
+		#print gaptab.count()
 		for i in xrange(gaptab.count()):
 		#	print gaptab[i].start
 			tar_len += gaptab[i].end-gaptab[i].start
