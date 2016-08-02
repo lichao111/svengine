@@ -13,6 +13,7 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio.Alphabet import generic_dna
 import shelve
+import pybedtools.featurefuncs
 
 starttime=time.time()
 devnull=open(os.devnull, 'w')
@@ -155,7 +156,7 @@ def main(args):
 	edgein = args.edgein
 	mergemax = args.mergemax
 	tempfile.tempdir = args.tmpdir
-	tar_len=0
+	#tar_len=0
 	try:
 		os.mkdir(tempfile.tempdir)
 	except:
@@ -219,17 +220,18 @@ def main(args):
 			targfile=pybedtools.BedTool(targetfile.read(),from_string=True)
 			targtab=targfile.complement(g=sizefile)
 			gaptab=targtab.cat(gaptab.each(pybedtools.featurefuncs.extend_fields,n=targtab.field_count()).saveas())
-		gaptab=gaptab.flank(g=sizefile, b=edgein)
+		gaptab=gaptab.slop(g=sizefile, b=edgein)
+		gaptab=gaptab.merge()
 		#print gaptab.count()
-		for i in xrange(gaptab.count()):
+		#for i in xrange(gaptab.count()):
 		#	print gaptab[i].start
-			tar_len += gaptab[i].end-gaptab[i].start
+		#	tar_len += gaptab[i].end-gaptab[i].start
 		#print tar_len							#need to merge
 	except pybedtools.cbedtools.BedToolsFileError:
 		raise Exception("incorrect gapfile provided, must in BED format")
 
 	dic={} #common dictionary interface for passing parameters
-	for i in ('hapseq','gaptab','reffile','plansize','nligation','nploid','oprefix','nprocs','edgein','burnin','mergemax','tar_len'):
+	for i in ('hapseq','gaptab','reffile','plansize','nligation','nploid','oprefix','nprocs','edgein','burnin','mergemax'):
 		dic[i] = locals()[i]
 
 	print >>sys.stderr, "entering runmode", runmode
@@ -464,7 +466,8 @@ def var2fq(bun):
 	reffile = bun.reffile.name
 	parlist = bun.parlist
 	mergemax = bun.mergemax
-	tar_len=bun.tar_len
+	gaptab = bun.gaptab
+	#tar_len=bun.tar_len
 	#parfile in python ConfigParser format
 	#LibraryNumber = 3
 	#Have to use very complex merging
@@ -503,7 +506,12 @@ def var2fq(bun):
 	for hap in hapvar.keys():
 		hapfas=bun.hapseq[hap].filename
 		for feat in hapvar[hap]:
-			hapiter.append([hap,hapfas,nligation,parlist,reffile,nploid,idx,total,feat,mergemax,tar_len])
+                    	feat_bedtool=pybedtools.BedTool(str(feat),from_string=True)
+                        feat_bedtool=feat_bedtool.intersect(gaptab)#.end - gaptab.intersect(feat).start
+                        tar_len = 0
+			for i in feat_bedtool:
+                                tar_len += (i.end - i.start) 
+                        hapiter.append([hap,hapfas,nligation,parlist,reffile,nploid,idx,total,feat,mergemax,tar_len])
 			idx += 1
 	#for it in hapiter:
 	#	print it
@@ -607,13 +615,15 @@ def fqwgs(parlist,nligation,reffile,nploid,seq,lib,freq,mergemax,tar_len): #crea
 	tmpfa=False #fa is temporary created or constant
 	if(type(seq)==type({})):
 		fa=seq['filename']
-		seqs=seq['seq'] #for fasforge calls
-		
+		seqs=seq['seq'] #for fasforge calls	
 	else:
 		fa=myTemporaryFile(prefix="fawgs_") #this has to be removed
 		tmpfa=True
 		seqs=seq
+	#seqlj = sum( [len(s) for s in seqs] )
+	#print 'seql:',seqlj
 	seql = sum( [len(s) for s in seqs] ) - tar_len #len of all seqs
+	#print 'seql:',seql,'tar_len:',tar_len
 	libnames=json.loads(parlist.get('xwgsim', 'libnames'))
 	coverage=json.loads(parlist.get('xwgsim', 'coverage'))
 	isize=json.loads(parlist.get('xwgsim', 'isize'))
@@ -622,6 +632,7 @@ def fqwgs(parlist,nligation,reffile,nploid,seq,lib,freq,mergemax,tar_len): #crea
 	par=' '.join(['%s %s' % (key, value) for (key, value) in json.loads(parlist.get('xwgsim', 'par')).items()])
 	libn=libnames[lib]
 	nrdp = seql*coverage[libn]/nploid*freq/(rl1[libn]+rl2[libn])
+	#print 'nrdp:',nrdp
 	nmode = len(isize[libn])
 	mode = [ None ] * nmode
 	if freq == 0 or nrdp == 0:

@@ -156,7 +156,6 @@ def main(args):
 	layout = args.layout
 	tempfile.tempdir = args.tmpdir
 	targetfile=args.targetfile
-	tar_len = 0
 	try:
 		os.mkdir(tempfile.tempdir)
 	except:
@@ -193,13 +192,7 @@ def main(args):
 			targfile=pybedtools.BedTool(targetfile.read(),from_string=True)
 			targtab=targfile.complement(g=sizefile)
 			gaptab=targtab.cat(gaptab.each(pybedtools.featurefuncs.extend_fields,n=targtab.field_count()).saveas())
-		gaptab=gaptab.slop(g=sizefile, b=edgein)
-		gaptab=gaptab.merge()
-		#print gaptab.count()
-		for i in xrange(gaptab.count()):
-		#	print gaptab[i].start
-			tar_len += (gaptab[i].end-gaptab[i].start)
-		#print tar_len
+	gaptab=gaptab.slop(g=sizefile, b=edgein)
 	except pybedtools.cbedtools.BedToolsFileError:
 		raise Exception("incorrect gapfile provided, must in BED format")
 
@@ -272,12 +265,6 @@ def main(args):
 			brpt[var[4]][var[5]]=var	#brpt[chr][pos]
 	#print "br5"
 	ref = pysam.Fastafile(reffile.name)
-#---------------add to dele the target region-------------
-	#ref_del = seq2targ(ref,gaptab)
-	#reffile_del = file("tar.fnv")
-	#ref_del = pysam.Fastafile("tar.fnv")
-
-
 	seq0 = { 'filename':reffile.name, 'seq':[ SeqRecord(Seq(ref.fetch(ref.references[i],0,ref.lengths[i]) ),id=ref.references[i],name=ref.references[i],description=ref.references[i]) for i in xrange(0,ref.nreferences) ] } #input sequence
 	#print "br6"
 	seq1 = var2seq(brpt,reffile,nligation,oprefix)
@@ -294,7 +281,7 @@ def main(args):
 	pariter=[]
 	for lib in range(0,nlibrary):
 		for fi in range(0,len(freq1)):
-			pariter.append([parlist,nligation,reffile.name,nploid,seq0,lib,freq1[fi],seq0,seq1,lib,oprefix,mergemax,tar_len])
+			pariter.append([parlist,nligation,reffile.name,nploid,seq0,lib,freq1[fi],seq0,seq1,lib,oprefix,mergemax])
 
 	#NOTE: debug code
 	ffq=[]
@@ -342,40 +329,16 @@ def makebam(parit):
 
 def makefq(parit):		
 	print "processing lib %s freq %s regions" % (str(parit[5]),str(parit[6]))
-	parlist=parit[0]; nligation=parit[1]; rname=parit[2]; nploid=parit[3]; lib=parit[5]; freq1=parit[6]; freq0=1-freq1; seq0=parit[7]; seq1=parit[8]; lib=parit[9]; oprefix=parit[10]; mergemax=parit[11];tar_len=parit[12] #seq0=parit[4]; 
+	parlist=parit[0]; nligation=parit[1]; rname=parit[2]; nploid=parit[3]; lib=parit[5]; freq1=parit[6]; freq0=1-freq1; seq0=parit[7]; seq1=parit[8]; lib=parit[9]; oprefix=parit[10]; mergemax=parit[11] #seq0=parit[4]; 
 	libnames = json.loads(parlist.get('xwgsim', 'libnames'))
-	wgs0 = mf.fqwgs(parlist,nligation,rname,nploid,seq0,lib,freq0,mergemax,tar_len)
-	wgs1 = mf.fqwgs(parlist,nligation,rname,nploid,seq1,lib,freq1,mergemax,tar_len)
+	wgs0 = mf.fqwgs(parlist,nligation,rname,nploid,seq0,lib,freq0,mergemax)
+	wgs1 = mf.fqwgs(parlist,nligation,rname,nploid,seq1,lib,freq1,mergemax)
 	#bam0 = mf.runwgs(parlist,nligation,rname,nploid,seq0,lib,freq0)
 	#bam1 = mf.runwgs(parlist,nligation,rname,nploid,seq1,lib,freq1)
 	#print [bam0,bam1]
 	ffq = mf.mergefq([wgs0,wgs1],oprefix+"."+libnames[lib],mergemax)
 	print "done lib %s freq %s" % (str(parit[5]+1),str(parit[6])), time.time()-starttime, " seconds"
 	return ffq
-
-def seq2targ(reffile,gaptab):
-	seq=[]
-	ref=reffile
-	tar_name=[]
-	for j in xrange(gaptab.count()):
-		while gaptab[j][0]  not in tar_name:
-			tar_name.append(gaptab[j][0])
-	print tar_name
-	for i in xrange(0 , ref.nreferences):
-		
-		rname=ref.references[i]; rlen=ref.lengths[i]; segst=0;
-#		print rname
-		rseq=Seq(ref.fetch(rname,0,rlen),generic_dna)
-		if rname not in tar_name:
-			seg=[rseq]
-		else:
-			for k in xrange(gaptab.count()):
-				print gaptab[k],gaptab[k][0]
-				if gaptab[k][0] == rname:
-					seg =rseq[:gaptab[k].start]+rseq[gaptab[k].end:]
-		seq.append( SeqRecord( Seq(''.join([str(s) for s in seg]), generic_dna), id=rname, name=rname, description='tar'+"."+rname ) )
-	SeqIO.write(seq,'tar.fnv','fasta') 
-	return { 'filename':"tar.fnv", 'seq':seq }
 
 def run():
 	parser = argparse.ArgumentParser(description="spike-in mutations to fasta files, \
